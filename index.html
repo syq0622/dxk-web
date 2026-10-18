@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1218">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="独享库">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="format-detection" content="telephone=no">
+<title>独享库</title>
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-512.png">
+<link rel="apple-touch-icon" href="/icon-512.png">
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="/style.css?v=31">
+</head>
+<body>
+
+<!-- ============ 顶栏 ============ -->
+<header class="app-bar">
+  <div class="brand" id="brandBtn">
+    <div class="logo"><img src="/logo.png" alt="独享库"></div>
+    <div class="brand-txt"><b>独享库</b><span>影视聚合</span></div>
+  </div>
+
+  <!-- 导航：首页 + 影视源的一级分类（电影 / 电视剧 / 短剧 …），脚本按源动态生成 -->
+  <nav class="navs" id="topNav">
+    <a data-nav="home" class="active">首页</a>
+    <a data-nav="cats">分类</a>
+  </nav>
+
+  <!-- 右侧：搜索框 + 收藏/历史/我的（图标） + 影视源 + 账号 -->
+  <div class="bar-ops">
+    <div class="searchbox">
+      <div class="search-wrap">
+        <input id="kw" type="search" placeholder="搜索电影 / 电视剧 / 综艺 / 动漫" autocomplete="off">
+        <div id="searchDrop" class="search-drop"></div>
+      </div>
+      <button id="btnSearch" class="btn-primary">搜索</button>
+    </div>
+    <button class="nav-ico" data-nav="fav" title="我的收藏" aria-label="我的收藏">
+      <svg viewBox="0 0 24 24"><path d="M12 3.4l2.7 5.5 6.1.9-4.4 4.3 1 6-5.4-2.8-5.4 2.8 1-6L3.2 9.8l6.1-.9z"/></svg>
+    </button>
+    <button class="nav-ico" data-nav="history" title="观看历史" aria-label="观看历史">
+      <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7v3.6l4.4-4.4L12 .8V3z"/><path d="M11 7.6h2v5.2h4.2v2H11z"/></svg>
+    </button>
+    <button class="nav-ico" data-nav="mine" title="我的" aria-label="我的">
+      <svg viewBox="0 0 24 24"><path d="M12 12.4a4.6 4.6 0 1 0 0-9.2 4.6 4.6 0 0 0 0 9.2zm0 2c-4.1 0-8 2.1-8 4.7V21h16v-1.9c0-2.6-3.9-4.7-8-4.7z"/></svg>
+    </button>
+    <button class="btn-icon" id="btnSet" title="影视源" aria-label="影视源">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.9 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.9a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 8.9 4.6a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.6a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.4 8.9v.01a1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1.06z"/></svg>
+    </button>
+    <button class="btn-user" id="btnUser" title="账号 / 我的">
+      <span class="ua" id="userAva">独</span><span id="userName">登录</span>
+    </button>
+  </div>
+</header>
+
+<!-- ============ 主体 ============ -->
+<main id="main">
+
+  <!-- 首页：大图轮播 + 分区流（继续观看 / 最新上架 / 分类精选） -->
+  <section id="page-home" class="page active">
+    <div class="wrap">
+      <div id="homeHero" class="hero"></div>
+      <div id="homeResume"></div>
+      <div id="homeSecs"></div>
+      <div class="home-foot">
+        <button class="btn-ghost" id="btnHomeAll">按分类浏览全部影片</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 分类：多行筛选条（大类 + 细分）+ 影片网格 + 分页 -->
+  <section id="page-cats" class="page">
+    <div class="wrap">
+      <div class="frows">
+        <div class="frow" id="catRow1">
+          <span class="flab">类型</span>
+          <div class="flist" id="catLv1"></div>
+        </div>
+        <div class="frow" id="catRow2">
+          <span class="flab">细分</span>
+          <div class="flist" id="catLv2"></div>
+        </div>
+      </div>
+      <div id="catGrid" class="grid"></div>
+      <div id="catPager" class="pager"></div>
+    </div>
+  </section>
+
+  <!-- 搜索结果 -->
+  <section id="page-search" class="page">
+    <div class="wrap page-pad">
+      <div class="page-head">
+        <h2>搜索结果</h2>
+        <span id="searchSub" class="page-sub"></span>
+        <div class="seg" id="searchSeg">
+          <button data-v="merge" class="on">聚合视图</button>
+          <button data-v="group">分源视图</button>
+        </div>
+      </div>
+      <div id="searchResult"></div>
+    </div>
+  </section>
+
+  <!-- 详情 -->
+  <section id="page-detail" class="page">
+    <div class="wrap page-pad">
+      <div id="detailBox"></div>
+    </div>
+  </section>
+
+  <!-- 收藏 -->
+  <section id="page-fav" class="page">
+    <div class="wrap page-pad">
+      <div class="page-head"><h2>我的收藏</h2><span id="favCount" class="page-sub"></span>
+        <div class="head-ops">
+          <button class="btn-ghost btn-sm btn-edit" id="btnFavManage">编辑</button>
+          <button class="btn-ghost btn-sm" id="btnFavClear">清空</button>
+        </div>
+      </div>
+      <div id="favBar" class="mgr-bar"></div>
+      <div id="favBox"></div>
+    </div>
+  </section>
+
+  <!-- 历史 -->
+  <section id="page-history" class="page">
+    <div class="wrap page-pad">
+      <div class="page-head"><h2>观看历史</h2><span class="page-sub">最近 60 条</span>
+        <div class="head-ops">
+          <button class="btn-ghost btn-sm btn-edit" id="btnHisManage">编辑</button>
+          <button class="btn-ghost btn-sm" id="btnHisClear">清空</button>
+        </div>
+      </div>
+      <div id="hisBar" class="mgr-bar"></div>
+      <div id="historyBox"></div>
+    </div>
+  </section>
+
+  <!-- 我的 -->
+  <section id="page-mine" class="page">
+    <div class="wrap page-pad">
+
+      <!-- 账号 -->
+      <div class="mine-card">
+        <div class="mc-ava" id="mcAva">独</div>
+        <div class="mc-txt">
+          <b id="mcName">未登录</b>
+          <span id="mcSub">登录后才能使用收藏、观看历史；登录后还会把影视源、观看进度同步到云端。</span>
+        </div>
+        <button class="btn-primary" id="mcLogin">登录 / 注册</button>
+      </div>
+      <div class="mine-sync" id="mineSync"></div>
+
+      <!-- 播放设置 -->
+      <div class="panel">
+        <h3>播放设置</h3>
+        <div class="setrow">
+          <div class="sr-t"><b>自动跳过片头片尾</b><span>按你在播放页标记的时间点自动跳过</span></div>
+          <label class="sw"><input type="checkbox" id="setAutoSkip" checked><i></i></label>
+        </div>
+        <div class="setrow">
+          <div class="sr-t"><b>默认倍速</b><span>每次开始播放时使用的速度</span></div>
+          <div class="sprange">
+            <input type="range" id="setRate" min="0.5" max="3" step="0.1" value="1">
+            <em id="setRateVal">1.0x</em>
+          </div>
+        </div>
+        <div class="setrow">
+          <div class="sr-t"><b>触摸手势</b><span>左右滑调进度、上下滑调音量 / 亮度、长按倍速</span></div>
+          <label class="sw"><input type="checkbox" id="setGesture" checked><i></i></label>
+        </div>
+      </div>
+
+      <!-- 投屏 -->
+      <div class="panel">
+        <h3>投屏到电视</h3>
+        <p class="tip">电脑 / 手机与电视在同一个 WiFi 下，可把正在播放的内容推到电视（DLNA）。</p>
+        <div class="row">
+          <button class="btn-ghost" id="btnCastScan">搜索局域网设备</button>
+          <span class="tip" id="castTip"></span>
+        </div>
+        <div id="castBox" class="cast-box"></div>
+      </div>
+
+      <!-- 离线下载 -->
+      <div class="panel">
+        <h3>离线下载</h3>
+        <p class="tip">在详情页点「缓存」，勾选要存的集数，就能把剧存到本机，没网也能看。缓存期间请让独享库停在前台（手机切到后台会被系统暂停）。</p>
+        <div id="dlBox" class="dl-box"></div>
+      </div>
+
+      <!-- 本机缓存 -->
+      <div class="panel">
+        <h3>本机缓存</h3>
+        <p class="tip">片单和封面会自动在本机存一份，打开就能秒出内容；完全断网时也能翻已缓存的片单和封面。</p>
+        <div class="row">
+          <button class="btn-ghost" id="btnCacheClear">清空本机缓存</button>
+          <span class="tip" id="cacheTip"></span>
+        </div>
+      </div>
+
+      <!-- 影视源 -->
+      <div class="panel">
+        <h3>影视源</h3>
+        <p class="tip">内置采集站已自动配置；也可以添加自己的采集接口。所有源会自动合并成一份片单，不用手动挑源。</p>
+        <div id="indexStatus" class="index-status"></div>
+        <div class="row"><button class="btn-ghost" id="btnOpenSet">打开影视源</button></div>
+      </div>
+
+      <!-- 手机 / 平板连接（可选增强） -->
+      <div class="panel" id="panelServer">
+        <h3>手机 / 平板连接</h3>
+        <div id="srvDesk">
+          <p class="tip">在手机上装好「独享库」后，把下面这个地址填到手机的「我的 → 手机 / 平板连接」里（手机和电脑要连同一个 WiFi）。</p>
+          <div class="row">
+            <input id="srvShow" type="text" readonly>
+            <button class="btn-primary" id="btnSrvCopy">复制地址</button>
+          </div>
+        </div>
+        <div id="srvApp">
+          <p class="tip">可选：连上电脑后可以投屏到电视、播放电脑上的本地文件。不连也能正常看片。</p>
+          <div class="row">
+            <input id="srvUrl" type="text" placeholder="http://192.168.1.100:8765（选填）" autocomplete="off">
+            <button class="btn-primary" id="btnSrvSave">保存并连接</button>
+            <button class="btn-ghost" id="btnSrvClear">断开 / 清除</button>
+          </div>
+          <div class="row">
+            <button class="btn-ghost" id="btnSrvGuide">打开连接引导</button>
+          </div>
+          <div id="srvMsg" class="msg"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>自定义播放地址</h3>
+        <p class="tip">支持 m3u8 / mp4 / flv / ts 直链，也可以把本地文件拖到下面的输入框。</p>
+        <div class="row">
+          <input id="customUrl" type="text" placeholder="https://xxx.com/a.m3u8　或　D:\电影\a.mp4">
+          <button class="btn-primary" id="btnCustomPlay">立即播放</button>
+        </div>
+        <div class="hint-list">
+          <div>· 直播地址通常形如 <code>http://ip:port/live/xxx.m3u8</code></div>
+          <div>· 本地文件请填写完整路径，例如 <code>D:\影视\流浪地球.mkv</code></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3>直播源</h3>
+        <p class="tip">粘贴 m3u / m3u8 直播列表地址（如 IPTV 订阅地址），或直接粘贴单条直播流地址。</p>
+        <div class="row">
+          <input id="liveUrl" type="text" placeholder="http://xxx.com/live.m3u">
+          <button class="btn-primary" id="btnLiveLoad">加载频道</button>
+        </div>
+        <div id="liveGroups" class="live-groups"></div>
+      </div>
+
+      <div class="about">独享库 · 自用影视聚合　<span id="aboutVer"></span></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ 移动端底部导航 ============ -->
+<nav class="tabbar" id="tabBar">
+  <a data-nav="home" class="active">首页</a>
+  <a data-nav="cats">分类</a>
+  <a data-nav="fav">收藏</a>
+  <a data-nav="history">历史</a>
+  <a data-nav="mine">我的</a>
+</nav>
+
+<!-- ============ 影视源弹窗 ============ -->
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>影视源</h3>
+      <button class="btn-icon" id="btnSetClose" aria-label="关闭">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>添加影视接口（TVBox / 猫影视 的 rule.json 地址）</label>
+        <div class="row">
+          <input id="newSrcName" type="text" placeholder="源名称（可留空）">
+          <input id="newSrcUrl" type="text" placeholder="http://xxx.com/rule.json">
+          <button class="btn-ghost" id="btnSrcTest">测试</button>
+          <button class="btn-primary" id="btnSrcAdd">添加</button>
+        </div>
+        <div id="srcMsg" class="msg"></div>
+      </div>
+
+      <div class="field">
+        <label>推荐源（点击「测试并添加」）</label>
+        <div id="presetBox" class="preset-box"></div>
+      </div>
+
+      <div class="field">
+        <label>已添加的源</label>
+        <div id="srcBox" class="src-box"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 连接电脑引导（可选，从「我的」页手动打开） ============ -->
+<div id="setupModal" class="modal">
+  <div class="modal-box auth-box">
+    <div class="modal-head">
+      <h3>连接电脑上的独享库（可选）</h3>
+    </div>
+    <div class="modal-body">
+      <p class="tip">不连电脑也能正常看片。连上以后，手机会多出「投屏到电视、播放电脑上的本地文件」这些能力。<br>
+        想连的话：先打开电脑上的独享库，在电脑端「我的 → 手机 / 平板连接」里复制地址，粘贴到下面。</p>
+      <div class="field">
+        <label>电脑地址</label>
+        <input id="setupUrl" type="text" placeholder="http://192.168.1.100:8765" autocomplete="off">
+      </div>
+      <div class="row">
+        <button class="btn-primary" id="btnSetupOk">连接</button>
+        <button class="btn-ghost" id="btnSetupRetry">重试上次地址</button>
+      </div>
+      <div id="setupMsg" class="msg"></div>
+      <p class="tip">注意：手机要和电脑连同一个 WiFi。电脑上的地址会变（路由器重新分配 IP 时会变），换了 WiFi 就要重新填一次。</p>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 登录 / 注册弹窗 ============ -->
+<div id="authModal" class="modal">
+  <div class="modal-box auth-box">
+    <div class="modal-head">
+      <h3 id="authTitle">登录独享库</h3>
+      <button class="btn-icon" id="btnAuthClose" aria-label="关闭">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="tip" id="authTip">登录后，收藏和自定义影视源会自动同步到云端，换手机、换电脑都还在。</p>
+
+      <div class="field">
+        <label>邮箱</label>
+        <input id="authEmail" type="email" placeholder="you@example.com" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>密码（至少 6 位）</label>
+        <input id="authPw" type="password" placeholder="至少 6 位" autocomplete="current-password">
+      </div>
+
+      <div class="row">
+        <button class="btn-primary" id="btnDoLogin">登录</button>
+        <button class="btn-ghost" id="btnDoSignup">注册新账号</button>
+        <button class="btn-ghost" id="btnDoLogout" style="display:none">退出登录</button>
+      </div>
+      <div id="authMsg" class="msg"></div>
+
+      <div id="authState" class="hint-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 选源弹窗（聚合搜索 / 一键换源） ============ -->
+<div id="pickModal" class="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="pickTitle">选择播放源</h3>
+      <button class="btn-icon" id="btnPickClose" aria-label="关闭">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="tip" id="pickTip"></p>
+      <div id="pickBox" class="srcpick"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 播放器 ============ -->
+<div id="player" class="player">
+  <div class="player-head">
+    <button class="btn-icon" id="btnPlayerBack" aria-label="返回">
+      <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="ph-txt">
+      <div id="playerTitle" class="player-title">播放中</div>
+      <div id="pInfo" class="pinfo"></div>
+    </div>
+    <div class="player-ops">
+      <span id="playerHow" class="how"></span>
+      <button class="pbtn" id="btnNextEp">下一集 »|</button>
+      <button class="pbtn" id="btnEpToggle">选集 <i class="caret"></i></button>
+      <button class="pbtn" id="btnMore">更多 <i class="caret"></i></button>
+      <button class="btn-icon" id="btnPlayerClose" aria-label="关闭">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+
+    <!-- 「更多」：低频操作收在这里，控制条只留高频按钮 -->
+    <div class="more-pop" id="morePop">
+      <button class="pbtn" id="btnBack90">« 90秒</button>
+      <button class="pbtn" id="btnFwd90">90秒 »</button>
+      <button class="pbtn" id="btnIntro">标记片头</button>
+      <button class="pbtn" id="btnOutro">标记片尾</button>
+      <button class="pbtn" id="btnAutoSkip">自动跳过 开</button>
+      <button class="pbtn" id="btnSwap">换源</button>
+      <button class="pbtn" id="btnCast">投屏</button>
+      <button class="pbtn" id="btnDl">下载本集</button>
+    </div>
+  </div>
+  <div class="player-body" id="pBody">
+    <video id="video" autoplay playsinline></video>
+
+    <div class="vspin" id="vSpin"></div>
+    <div class="vtip" id="vTip"></div>
+
+    <!-- 自绘播放器控制条（原生控件在部分内核里不显示，所以全部自己做） -->
+    <div class="vctl" id="vCtl">
+      <div class="vbar" id="vBar">
+        <div class="vbar-buf" id="vBuf"></div>
+        <div class="vbar-cur" id="vCur"></div>
+        <div class="vbar-dot" id="vDot"></div>
+      </div>
+      <div class="vrow">
+        <button class="vbtn" id="vToggle" aria-label="播放/暂停">
+          <svg class="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="i-pause hide" viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+        </button>
+        <button class="vbtn vseek" id="vBack10" aria-label="快退10秒" title="快退10秒">
+          <svg class="ic" viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          <span class="vn">10</span>
+        </button>
+        <button class="vbtn vseek" id="vFwd10" aria-label="快进10秒" title="快进10秒">
+          <svg class="ic" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+          <span class="vn">10</span>
+        </button>
+        <span class="vtime" id="vTime">00:00 / 00:00</span>
+        <span class="vspacer"></span>
+        <button class="vbtn vrate" id="vSpeed" title="播放速度">1x</button>
+        <button class="vbtn" id="vMute" aria-label="静音">
+          <svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a3.5 3.5 0 0 0-2-3.15v6.3A3.5 3.5 0 0 0 16.5 12z"/></svg>
+        </button>
+        <input type="range" class="vvol" id="vVol" min="0" max="100" value="100" aria-label="音量">
+        <button class="vbtn" id="vPip" aria-label="画中画">
+          <svg viewBox="0 0 24 24"><path d="M3 5h18v11h-7v-2h5V7H5v4H3V5zm10 6h8v8h-8v-8z"/></svg>
+        </button>
+        <button class="vbtn" id="vFull" aria-label="全屏">
+          <svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/></svg>
+        </button>
+      </div>
+      <!-- 倍速面板：0.5x – 3.0x 自由拖动 -->
+      <div class="speed-pop" id="speedPop">
+        <div class="sp-top"><b>播放速度</b><em id="spVal">1.0x</em></div>
+        <input type="range" id="vRate" min="0.5" max="3" step="0.05" value="1" aria-label="播放速度">
+        <div class="sp-quick">
+          <button data-r="0.5">0.5x</button>
+          <button data-r="0.75">0.75x</button>
+          <button data-r="1">1x</button>
+          <button data-r="1.25">1.25x</button>
+          <button data-r="1.5">1.5x</button>
+          <button data-r="2">2x</button>
+          <button data-r="3">3x</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- 播放线路：附在画面下面，当前线路高亮，点一下即可换源 -->
+  <div class="vsrc-bar" id="pSrcBar"></div>
+  <!-- 剧集条：默认收起，点顶栏「选集」才展开，避免占掉半屏画面 -->
+  <div class="player-foot" id="playerFoot">
+    <div class="ep-head">
+      <b>选集</b><span id="epLine" class="ep-line"></span>
+      <button class="btn-icon" id="btnEpClose" aria-label="收起选集">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div id="epBar" class="ep-bar"></div>
+  </div>
+</div>
+
+<div id="offlineBar" class="offline-bar"></div>
+<div id="toast" class="toast"></div>
+
+<script src="/config.js"></script>
+<script src="/cloud.js"></script>
+<!-- 公网版专属：填 Cloudflare Worker 代理地址（电脑版 / 安卓版没有这个文件） -->
+<script src="/proxy.js"></script>
+<script src="/lib/hls.min.js"></script>
+<script src="/local.js?v=31"></script>
+<script src="/cache.js?v=31"></script>
+<script src="/app.js?v=31"></script>
+</body>
+</html>
